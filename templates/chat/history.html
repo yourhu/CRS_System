@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}对话历史 - CRS 系统{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">我的对话历史</h5>
+        </div>
+        <div class="card-body">
+            <div id="conversation-history">
+                <!-- 对话历史将动态插入这里 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const historyContainer = document.getElementById('conversation-history');
+    
+    try {
+        const response = await fetch('/crs/history/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        const conversations = await response.json();
+
+        if (!conversations.length) {
+            historyContainer.innerHTML = '<p class="text-muted">暂无对话历史。</p>';
+            return;
+        }
+
+        conversations.forEach(conv => {
+            let html = `
+                <div class="conversation mb-4 p-3 border rounded">
+                    <h6 class="text-primary">对话 #${conv.id} - ${new Date(conv.created_at).toLocaleString()}</h6>
+                    <div class="messages mt-2">`;
+
+            // 渲染消息
+            conv.messages.forEach(msg => {
+                const sender = msg.message_type === 'user' ? '您' : '系统';
+                html += `<p><strong>${sender}:</strong> ${msg.content} <small class="text-muted">(${new Date(msg.timestamp).toLocaleString()})</small></p>`;
+            });
+
+            // 渲染推荐商品（如果有）
+            if (conv.recommendations && conv.recommendations.length) {
+                conv.recommendations.forEach(rec => {
+                    html += `<div class="recommendations mt-2"><h6>推荐商品:</h6>`;
+                    rec.products.forEach(product => {
+                        html += `
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <h6>${product.name}</h6>
+                                    <p>${product.description}</p>
+                                    <p>价格: ¥${product.price}</p>
+                                    ${product.image ? `<img src="${product.image}" alt="${product.name}" style="max-width: 100px; height: auto;">` : ''}
+                                </div>
+                            </div>`;
+                    });
+                    html += `</div>`;
+                });
+            }
+
+            html += `</div></div>`;
+            historyContainer.innerHTML += html;
+        });
+    } catch (error) {
+        console.error('错误:', error);
+        historyContainer.innerHTML = '<p class="text-danger">加载对话历史失败，请稍后重试。</p>';
+    }
+});
+</script>
+
+<style>
+.conversation {
+    background-color: #f8f9fa;
+}
+
+.messages p {
+    margin: 5px 0;
+}
+
+.recommendations .card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.recommendations .card-body {
+    padding: 10px;
+}
+
+.recommendations h6 {
+    font-size: 1rem;
+    color: #ff4d4d;
+}
+</style>
+{% endblock %}

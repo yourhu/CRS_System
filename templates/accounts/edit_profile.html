@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% if form.errors %}
+<div class="alert alert-danger">
+    <ul>
+        {% for field, errors in form.errors.items %}
+            <li>{{ field }}: {{ errors|striptags }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% block title %}编辑个人资料{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-body p-5">
+                <h3 class="card-title text-center mb-4">编辑个人资料</h3>
+                <!-- 显示成功或错误消息 -->
+                {% if messages %}
+                <div class="alert-container mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form method="post" id="editProfileForm">
+                    {% csrf_token %}
+
+                    <!-- 表单整体错误 -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- 用户名行 -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="{{ form.username.id_for_label }}" class="col-form-label fw-bold mb-0">用户名：</label>
+                        </div>
+                        <div class="col">
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">{{ form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 邮箱行 -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="{{ form.email.id_for_label }}" class="col-form-label fw-bold mb-0">邮箱：</label>
+                        </div>
+                        <div class="col">
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 角色行（仅管理员可见） -->
+                    {% if request.user.role == 'admin' %}
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="{{ form.role.id_for_label }}" class="col-form-label fw-bold mb-0">角色：</label>
+                        </div>
+                        <div class="col">
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                            <div class="invalid-feedback d-block">{{ form.role.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 旧密码行 -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="{{ form.old_password.id_for_label }}" class="col-form-label fw-bold mb-0">旧密码：</label>
+                        </div>
+                        <div class="col">
+                            <div class="input-group">
+                                {{ form.old_password }}
+                                <button type="button" class="btn btn-outline-secondary toggle-password">显示</button>
+                            </div>
+                            {% if form.old_password.errors %}
+                            <div class="invalid-feedback d-block">{{ form.old_password.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 新密码行 -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="{{ form.new_password1.id_for_label }}" class="col-form-label fw-bold mb-0">新密码：</label>
+                        </div>
+                        <div class="col">
+                            <div class="input-group">
+                                {{ form.new_password1 }}
+                                <button type="button" class="btn btn-outline-secondary toggle-password">显示</button>
+                            </div>
+                            {% if form.new_password1.errors %}
+                            <div class="invalid-feedback d-block">{{ form.new_password1.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 确认新密码行 -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="{{ form.new_password2.id_for_label }}" class="col-form-label fw-bold mb-0">确认新密码：</label>
+                        </div>
+                        <div class="col">
+                            <div class="input-group">
+                                {{ form.new_password2 }}
+                                <button type="button" class="btn btn-outline-secondary toggle-password">显示</button>
+                            </div>
+                            {% if form.new_password2.errors %}
+                            <div class="invalid-feedback d-block">{{ form.new_password2.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">保存修改</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(5px); }
+.form-control { border-radius: 8px; transition: all 0.3s ease; }
+.input-group { width: auto; }
+.toggle-password { border-radius: 0 8px 8px 0; border-left: none; }
+.col-auto label { min-width: 65px; }
+@media (max-width: 576px) {
+    .col-auto label { min-width: 55px; font-size: 0.9rem; }
+    .form-control { padding: 10px 12px; }
+}
+.alert-container { max-width: 100%; }
+.alert { margin-bottom: 10px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const input = this.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.textContent = '隐藏';
+            } else {
+                input.type = 'password';
+                this.textContent = '显示';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

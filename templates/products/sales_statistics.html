@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}销售统计 - 商家{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">销售统计</h2>
+    
+    <!-- 总览 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">总销售额</h5>
+                    <p class="display-4 text-success">¥{{ total_sales|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">订单数量</h5>
+                    <p class="display-4 text-info">{{ order_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 按分类统计 -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5>按分类销售金额</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>分类</th>
+                        <th>销售额 (¥)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category, sales in category_sales.items %}
+                    <tr>
+                        <td>{{ category }}</td>
+                        <td>{{ sales|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 销售趋势图 -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5>30天销售趋势</h5>
+        </div>
+        <div class="card-body text-center">
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Sales Trend" class="img-fluid">
+        </div>
+    </div>
+
+    <a href="{% url 'change_password' %}" class="btn btn-secondary mt-3">返回个人资料</a>
+</div>
+{% endblock %}

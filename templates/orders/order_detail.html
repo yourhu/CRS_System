@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}订单详情 - CRS 系统{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>订单详情 #{{ order.id }}</h2>
+    <p>状态: <span id="order-status" class="badge bg-{% if order.status == '待支付' %}warning{% elif order.status == '已支付' %}info{% elif order.status == '已发货' %}primary{% elif order.status == '已完成' %}success{% else %}danger{% endif %}">{{ order.status }}</span></p>
+    <p>总价: ¥{{ order.total_price }}</p>
+    <p>创建时间: {{ order.created_at|date:"Y-m-d H:i" }}</p>
+    <p>更新时间: {{ order.updated_at|date:"Y-m-d H:i" }}</p>
+
+    <h4>订单项</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>商品</th>
+                <th>数量</th>
+                <th>单价</th>
+                <th>小计</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>¥{{ item.price }}</td>
+                <td>¥{{ item.get_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'order_list' %}" class="btn btn-primary">返回订单列表</a>
+    {% if order.status == '待支付' %}
+        <button class="btn btn-success ms-2" onclick="payOrder({{ order.id }})">支付订单</button>
+    {% elif order.status == '已发货' %}
+        <form method="post" action="{% url 'order_detail' order.id %}" style="display:inline;" onsubmit="return confirm('确认收到货物 #{{ order.id }}？');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="confirm_receipt">
+            <button type="submit" class="btn btn-success ms-2">确认收货</button>
+        </form>
+    {% endif %}
+    <form method="post" action="{% url 'order_detail' order.id %}" style="display:inline;" onsubmit="return confirm('确认取消订单 #{{ order.id }}？');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="cancel">
+        <button type="submit" class="btn btn-danger ms-2">取消订单</button>
+    </form>
+</div>
+
+<script>
+function payOrder(orderId) {
+    fetch("{% url 'pay_order' order.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message);
+            document.getElementById('order-status').textContent = '已支付';
+            document.getElementById('order-status').className = 'badge bg-info';
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('支付错误:', error);
+        alert('支付失败，请稍后重试！');
+    });
+}
+</script>
+{% endblock %}

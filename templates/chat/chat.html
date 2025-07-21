@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>智能推荐助手</title>
+    <style>
+        :root {
+            --primary-color: #2D5BFF;
+            --secondary-color: #F5F7FA;
+            --text-color: #1A202C;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #F0F4FF 0%, #FFFFFF 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            height: 90vh;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--secondary-color);
+            border-right: 1px solid #E2E8F0;
+            padding: 20px;
+        }
+
+        .history-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            background: rgba(45,91,255,0.05);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--secondary-color);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            width: fit-content;
+            max-width: 70%;
+        }
+
+        .system-message {
+            margin-left: 10px;
+        }
+
+        .user-message {
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .message-content {
+            padding: 12px 18px;
+            border-radius: 8px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .system-message .message-content {
+            background: #F0F4FF;
+            color: #2D3748;
+            border-bottom-left-radius: 2px;
+        }
+
+        .user-message .message-content {
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .product-card {
+            background: #F0F4FF;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            max-width: 300px;
+        }
+
+        .product-card img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        /* 添加商品卡片网格布局 */
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 80%;
+        }
+
+        .product-grid .product-card {
+            flex: 1;
+            min-width: 250px;
+            max-width: calc(33% - 10px);
+            margin-bottom: 0;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #E2E8F0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        #message-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45,91,255,0.1);
+        }
+
+        #send-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        #send-button:hover {
+            background: #2244CC;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(45,91,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #E2E8F0;
+                display: none;
+            }
+
+            .sidebar.active {
+                display: block;
+            }
+
+            .navbar {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2 style="margin-bottom: 20px; color: var(--text-color)">历史记录</h2>
+            <div class="history-item">对话记录1</div>
+            <div class="history-item">对话记录2</div>
+            <div class="history-item">对话记录3</div>
+        </div>
+
+        <div class="main-content">
+            <nav class="navbar">
+                <button class="back-button" onclick="history.back()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+                <h1 class="title">智能推荐助手</h1>
+            </nav>
+
+            <div id="chat-box"></div>
+
+            <div class="input-container">
+                <input type="text" id="message-input" placeholder="输入消息...">
+                <button id="send-button" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            appendSystemMessage('你好！欢迎使用推荐助手，我可以帮你找到最适合的商品推荐。');
+            loadConversationHistory();
+        };
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const chatBox = document.getElementById('chat-box');
+            const message = messageInput.value.trim();
+
+            if (!message) {
+                alert('消息不能为空');
+                return;
+            }
+
+            appendUserMessage(message);
+            messageInput.value = '';
+
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                appendSystemMessage('错误: CSRF token 获取失败，请刷新页面重试');
+                console.error('CSRF token not found in cookies');
+                return;
+            }
+
+            fetch('/crs/chat/api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                credentials: 'include',
+                body: JSON.stringify({ text: message })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    appendSystemMessage(`错误: ${data.error}`);
+                } else {
+                    // 收集所有商品消息
+                    const productMessages = [];
+
+                    // 处理消息
+                    const messages = data.messages || [];
+                    messages.forEach(msg => {
+                        if (msg.message_type === 'system') {
+                            appendSystemMessage(msg.content);
+                        } else if (msg.message_type === 'product') {
+                            // 收集商品消息，先不立即显示
+                            productMessages.push(msg);
+                        }
+                    });
+
+                    // 如果有商品，创建商品网格显示
+                    if (productMessages.length > 0) {
+                        appendProductGrid(productMessages);
+                    }
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => {
+                appendSystemMessage(`请求失败: ${error.message}`);
+                if (error.message.includes('403')) {
+                    appendSystemMessage('认证失败：请确保已登录或刷新页面重试。');
+                }
+            });
+        }
+
+        function appendUserMessage(text) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message user-message';
+            messageElement.innerHTML = `<div class="message-content">${text}</div>`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendSystemMessage(text) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message system-message';
+            messageElement.innerHTML = `<div class="message-content">${text}</div>`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendProductGrid(productMessages) {
+            const chatBox = document.getElementById('chat-box');
+            const gridElement = document.createElement('div');
+            gridElement.className = 'product-grid';
+
+            productMessages.forEach(msg => {
+                const product = msg.structured_data;
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p><strong>价格:</strong> ¥${product.price.toFixed(2)}</p>
+                    <p><strong>分类:</strong> ${product.category}</p>
+                    <p>${product.description ? product.description.substring(0, 100) + (product.description.length > 100 ? '...' : '') : '无描述'}</p>
+                    <a href='/products/detail/${product.id}/' class='btn btn-outline-primary btn-sm w-100'>查看详情</a>
+                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : ''}
+                `;
+                gridElement.appendChild(card);
+            });
+
+            chatBox.appendChild(gridElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendProductCard(name, data) {
+            const chatBox = document.getElementById('chat-box');
+            const card = document.createElement('div');
+            card.className = 'product-card system-message';
+            card.innerHTML = `
+                <h3>${name}</h3>
+                <p><strong>价格:</strong> ¥${data.price ? data.price.toFixed(2) : '未知'}</p>
+                <p>${data.description || '无描述'}</p>
+                ${data.image ? `<img src="${data.image}" alt="${name}">` : ''}
+            `;
+            chatBox.appendChild(card);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function loadConversationHistory() {
+            fetch('/crs/chat/history/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.innerHTML = '<h2 style="margin-bottom: 20px; color: var(--text-color)">历史记录</h2>';
+                if (data.length === 0) {
+                    sidebar.innerHTML += '<div class="history-item">暂无历史记录</div>';
+                } else {
+                    data.forEach((conv, index) => {
+                        const firstMessage = conv.messages.find(msg => msg.message_type === 'user')?.content || '无内容';
+                        const item = document.createElement('div');
+                        item.className = 'history-item';
+                        item.textContent = `对话 ${index + 1}: ${firstMessage.substring(0, 20)}${firstMessage.length > 20 ? '...' : ''}`;
+                        item.onclick = () => loadConversation(conv);
+                        sidebar.appendChild(item);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('加载历史记录失败:', error);
+                appendSystemMessage('加载历史记录失败: ' + error.message);
+            });
+        }
+
+        function loadConversation(conversation) {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+
+            // 收集所有商品消息
+            const productMessages = [];
+
+            conversation.messages.forEach(msg => {
+                if (msg.message_type === 'user') {
+                    appendUserMessage(msg.content);
+                } else if (msg.message_type === 'system') {
+                    appendSystemMessage(msg.content);
+                } else if (msg.message_type === 'product') {
+                    productMessages.push(msg);
+                }
+            });
+
+            // 如果有商品，创建商品网格显示
+            if (productMessages.length > 0) {
+                appendProductGrid(productMessages);
+            }
+        }
+
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

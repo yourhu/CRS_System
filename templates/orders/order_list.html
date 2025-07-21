@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}我的订单 - CRS 系统{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>我的订单</h2>
+    {% if orders %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>订单号</th>
+                <th>总价</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>¥{{ order.total_price }}</td>
+                <td><span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'paid' %}info{% elif order.status == 'shipped' %}primary{% elif order.status == 'completed' %}success{% else %}danger{% endif %}">{{ order.status }}</span></td>
+                <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                <td><a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">详情</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-center">您暂无订单。</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}商家后台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">欢迎，{{ user.username }}！</h2>
+    <div class="mb-3">
+        <a href="{% url 'create_product' %}" class="btn btn-primary">添加新产品</a>
+        <a href="{% url 'merchant_orders' %}" class="btn btn-primary">查看订单</a>
+    </div>
+    <h3>您的产品</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>价格</th>
+                <th>库存</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>¥{{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-outline-primary">编辑</a>
+                    <a href="{% url 'delete_product' product.id %}" class="btn btn-sm btn-outline-danger">删除</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">您尚未添加任何产品。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

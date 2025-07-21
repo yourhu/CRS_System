@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}添加商品{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-5 text-center">
+        <h1 class="display-5 fw-bold text-gradient">添加新商品</h1>
+        <p class="lead text-muted">发布您的优质商品，开启销售之旅</p>
+    </div>
+
+    {% if messages %}
+    <div class="alert-container mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-lg rounded-4">
+        <div class="card-body p-5">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <!-- 商品名称 -->
+                <div class="row align-items-center mb-4">
+                    <label for="{{ form.name.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-tag me-2 text-primary"></i>商品名称
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 商品分类 -->
+                <div class="row align-items-center mb-4">
+                    <label for="{{ form.category.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-boxes me-2 text-primary"></i>商品分类
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="invalid-feedback d-block">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 商品描述 -->
+                <div class="row align-items-start mb-4">
+                    <label for="{{ form.description.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-align-left me-2 text-primary"></i>商品描述
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.description}}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 价格 -->
+                <div class="row align-items-center mb-4">
+                    <label for="{{ form.price.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-yen-sign me-2 text-primary"></i>商品价格
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                        <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 库存 -->
+                <div class="row align-items-center mb-4">
+                    <label for="{{ form.stock.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-box-open me-2 text-primary"></i>商品库存
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.stock }}
+                        {% if form.stock.errors %}
+                        <div class="invalid-feedback d-block">{{ form.stock.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 商品规格 -->
+                <div class="row align-items-start mb-4">
+                    <label for="{{ form.specifications.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-code me-2 text-primary"></i>商品规格
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.specifications }}
+                        <small class="form-text text-muted">示例：{"颜色": ["黑", "白"], "尺寸": ["S", "M", "L"]}</small>
+                        {% if form.specifications.errors %}
+                        <div class="invalid-feedback d-block">{{ form.specifications.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 图片上传 -->
+                <div class="row align-items-start mb-5">
+                    <label for="{{ form.image.id_for_label }}" class="col-md-3 col-form-label text-md-end">
+                        <i class="fas fa-camera me-2 text-primary"></i>商品图片
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.image }}
+                        <small class="form-text text-muted">支持 PNG/JPG 格式，最大 5MB</small>
+                        {% if form.image.errors %}
+                        <div class="invalid-feedback d-block">{{ form.image.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 按钮 -->
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{% url 'merchant_dashboard' %}" class="btn btn-lg btn-light rounded-pill px-4">
+                        <i class="fas fa-times me-2"></i>取消
+                    </a>
+                    <button type="submit" class="btn btn-lg btn-gradient rounded-pill px-4">
+                        <i class="fas fa-save me-2"></i>保存商品
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-gradient {
+        background: linear-gradient(45deg, #2b5876, #4e4376);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(45deg, #4e4376, #2b5876);
+        color: white;
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(43, 88, 118, 0.3);
+    }
+
+    .form-control {
+        border-radius: 0.5rem;
+        padding: 0.6rem 1rem;
+    }
+
+    label {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
